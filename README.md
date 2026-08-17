@@ -358,12 +358,31 @@ If either platform raises an interstitial issue, set `popupVariant: 'corner'` in
 
 ## Deployment
 
-Vercel is the natural target for an App Router site: `/api/lead` and the two pages that read request data need a Node runtime, so a purely static export will not work.
+The site is deployed on Hostinger. `/api/lead` and the two pages that read request data need a Node runtime, so a purely static export will not work. Node 20.9 or newer is required, enforced by `engines` in package.json.
 
-1. Push to a Git remote and import the repo into Vercel
-2. Add all four variables from `.env.example` to the Vercel project settings
+1. Push to the Git remote and let the host build from it
+2. Add all four variables from `.env.example` to the host's environment settings
 3. Set `site.url` in `config/site.ts` to the final domain, because canonicals and structured data are built from it
 4. Deploy
+
+### The build must use webpack, not Turbopack
+
+`npm run build` runs `next build --webpack`. This is deliberate. **Do not revert it to a bare `next build`**, or the deploy will break.
+
+Next 16 defaults to Turbopack, and Turbopack requires Next's *native* SWC bindings. The production host runs a Linux image whose glibc is older than 2.29, so `@next/swc-linux-x64-gnu` cannot load there:
+
+```
+Attempted to load @next/swc-linux-x64-gnu, but an error occurred:
+/lib64/libm.so.6: version `GLIBC_2.29' not found
+```
+
+Next then falls back to its WebAssembly bindings and the build dies with "Turbopack is not supported on this platform because native bindings are not available". Webpack compiles fine against the WASM bindings, which is the fix.
+
+`npm run build:turbo` keeps the faster native path for local builds, where macOS has working native bindings. `next dev` is unchanged and still uses Turbopack, because development runs locally.
+
+### Do not add sharp as a direct dependency
+
+`sharp` is an **optional** dependency of Next. On a host where its native binary will not install, npm skips it and the install still succeeds. Promoting it to a direct dependency would make it required, and a failed binary install would then take down the whole deploy. The scripts in `scripts/` that import sharp are local tooling and never run on the host.
 
 ### Before go-live
 
