@@ -64,19 +64,29 @@ export async function POST(request: Request) {
     request.headers.get('x-real-ip') ??
     'unknown';
 
-  if (isRateLimited(ip)) {
-    return NextResponse.json(
-      { error: 'Too many submissions. Please try again in a minute.' },
-      { status: 429 },
-    );
-  }
-
   const result = validateLead(payload);
 
   if (!result.ok) {
     // Spam signals get a success-shaped 200 so the bot learns nothing.
     if (result.error === 'spam') return NextResponse.json({ success: true });
     return NextResponse.json({ error: result.error }, { status: 400 });
+  }
+
+  /*
+   * Rate limited only after validation passes, and deliberately so.
+   *
+   * This used to run first, which meant every rejected attempt burned one of
+   * the five slots. Someone mistyping their mobile number a few times, which is
+   * completely normal on a phone, got five tries and was then locked out of the
+   * only enquiry route on a site paid traffic lands on. The thing worth limiting
+   * is the upstream forward, not a person correcting a typo, and an invalid
+   * payload costs nothing because it never reaches Web3Forms.
+   */
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: 'Too many submissions. Please try again in a minute.' },
+      { status: 429 },
+    );
   }
 
   const subject = payload.estimate_range
