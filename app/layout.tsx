@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Lato, Poppins } from 'next/font/google';
 import { site } from '@/config/site';
 import { DEFAULT_OG, DEFAULT_OG_ALT, ogImage } from '@/lib/seo';
+import { GTM_ID, META_PIXEL_ID } from '@/lib/analytics';
 import { PALETTE } from '@/config/theme';
 import { SiteProvider } from '@/components/providers/SiteProvider';
 import { Header } from '@/components/layout/Header';
@@ -91,7 +92,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${poppins.variable} ${lato.variable}`}
     >
       <head>
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        {/*
+          Only hint at the origins we will actually contact. These were
+          unconditional, which opened a connection to Google on every page even
+          on a build with no GTM id, and made the served HTML look as though
+          tracking were present while diagnosing exactly that.
+        */}
+        {GTM_ID ? <link rel="preconnect" href="https://www.googletagmanager.com" /> : null}
+        {META_PIXEL_ID ? <link rel="preconnect" href="https://connect.facebook.net" /> : null}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema()) }}
