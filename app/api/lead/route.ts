@@ -130,7 +130,39 @@ export async function POST(request: Request) {
 
     if (!upstream.ok) {
       const text = await upstream.text().catch(() => '');
-      console.error('Web3Forms rejected the submission', upstream.status, text);
+
+      /*
+       * Distinguish a real API rejection from an infrastructure block. Web3Forms
+       * sits behind Cloudflare, and a challenged server-to-server request comes
+       * back as an HTML interstitial rather than JSON. Dumping that HTML into the
+       * log buries the useful signal, so say plainly which of the two happened.
+       */
+      const challenged = /Just a moment|cf-browser-verification|challenge-platform/i.test(text);
+
+      console.error(
+        challenged
+          ? `Web3Forms returned a Cloudflare challenge (HTTP ${upstream.status}), not an API ` +
+              'response. The request never reached the API, so the access key was never ' +
+              'checked. This is an infrastructure block, not a rejected key.'
+          : `Web3Forms rejected the submission (HTTP ${upstream.status}): ${text.slice(0, 400)}`,
+      );
+
+      /*
+       * The lead itself must survive a delivery failure.
+       *
+       * Until now a 502 here meant the enquiry was gone: the visitor saw an error
+       * and the details existed nowhere. On a site running paid search that is the
+       * most expensive possible outcome, because the click was already paid for.
+       * Writing the details to the server log means every lead can be recovered by
+       * hand even while delivery is broken.
+       */
+      console.error(
+        `LEAD NOT DELIVERED, recover manually: name=${payload.name} phone=+91 ${payload.phone} ` +
+          `property=${payload.propertyType || 'unspecified'} ` +
+          `service=${payload.service_interest || 'unspecified'} ` +
+          `page=${payload.source_page} at=${new Date().toISOString()}`,
+      );
+
       return NextResponse.json(
         {
           error: `We could not send that. Please WhatsApp or call ${site.phones.primary.display}.`,
