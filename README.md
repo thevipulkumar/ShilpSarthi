@@ -358,12 +358,41 @@ If either platform raises an interstitial issue, set `popupVariant: 'corner'` in
 
 ## Deployment
 
-The site is deployed on Hostinger. `/api/lead` and the two pages that read request data need a Node runtime, so a purely static export will not work. Node 20.9 or newer is required, enforced by `engines` in package.json.
+The site needs a **Node.js runtime**. `/api/lead` and `/contact` are both server-rendered on demand (`ƒ` in the build output), so a static host cannot serve this app. Node 20.9 or newer, enforced by `engines` in package.json.
 
-1. Push to the Git remote and let the host build from it
-2. Add all four variables from `.env.example` to the host's environment settings
-3. Set `site.url` in `config/site.ts` to the final domain, because canonicals and structured data are built from it
-4. Deploy
+### This will not work on Hostinger's static deploy product
+
+Hostinger's git-based deploy screen (Framework preset / Build command / **Output directory**) is static hosting. It builds the app correctly and then tries to publish `.next` as static files into `public_html`, which fails, because `.next` is not a servable static folder. The symptom is a green build log followed by a failed deployment and a Hostinger placeholder 404 on every path.
+
+The tell is that the screen has no **start command** field. A static host asks where the built files are; a Node host asks what to run.
+
+### Setting it up as a Node.js application
+
+Use hPanel's **Node.js** section (Business/Cloud plans, or a VPS), not the static deploy screen.
+
+| Setting | Value |
+| --- | --- |
+| Application root | the repository root |
+| Application startup file | `server.js` |
+| Node version | 20.x or newer |
+| Application URL | `shilpsarthi.in` |
+
+Then, on the server: `npm install` followed by `npm run build`. The app will not start without a completed build.
+
+`server.js` exists for exactly this. Hostinger's Node hosting is Passenger-based, so it starts an app by executing a file rather than by running `npm start`. It takes its port from `process.env.PORT`, which Passenger allocates, and hard-coding 3000 would make the app unreachable. `npm start` (`next start`) still works unchanged for a VPS or local production check, and `npm run start:server` runs the same file directly.
+
+### Environment variables
+
+Set these in the Node app's environment settings. The deploy screen showed **None**, which does not fail the build but does mean every enquiry fails and no conversion is attributable:
+
+| Variable | Notes |
+| --- | --- |
+| `WEB3FORMS_ACCESS_KEY` | Server-side only. Without it the enquiry form returns an error. |
+| `NEXT_PUBLIC_GTM_ID` | `GTM-KXQJBHN9` |
+| `NEXT_PUBLIC_GA4_ID` | `G-05HY2XK0C0` |
+| `NEXT_PUBLIC_META_PIXEL_ID` | `950403934685094` |
+
+Also set `site.url` in `config/site.ts` to the final domain, because canonicals and structured data are built from it.
 
 ### The build must use webpack, not Turbopack
 
