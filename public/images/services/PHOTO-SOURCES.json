@@ -1,0 +1,14 @@
+{
+  "_comment": "Slots holding a real photograph rather than a generated illustration. `npm run illustrations` skips these so it cannot overwrite a photo.",
+  "keep": [
+    "images/services/commercial-interiors.jpg"
+  ],
+  "sources": {
+    "images/services/commercial-interiors.jpg": {
+      "origin": "Unsplash photo-1497366216548-37526070297c",
+      "licence": "Unsplash Licence: commercial use permitted, no attribution required",
+      "caption_rule": "Illustrative only. Must NOT be captioned as a delivered Shilp Sarthi project."
+    }
+  },
+  "note": "The four service slots now on supplied HomeLane photography live at their own descriptive filenames and are not written by the illustrations script at all, so they need no entry here."
+}

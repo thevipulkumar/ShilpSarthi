@@ -1,0 +1,37 @@
+{
+  "retrievedAt": "2026-08-17",
+  "assets": [
+    {
+      "id": "service.modular-kitchen",
+      "src": "/images/services/kitchen-island-marble-green-stools-01.webp",
+      "alt": "Modular island kitchen with a marble counter, pendant lights and green bar stools",
+      "width": 800,
+      "height": 600,
+      "note": "original 800x600 jpeg, supplied in ./images as sleek-serenity-elegant-island-kitchen-green-bar-stools.webp"
+    },
+    {
+      "id": "service.living-room",
+      "src": "/images/services/living-room-daylight-chandelier-01.webp",
+      "alt": "Living room in daylight with a chandelier, upholstered seating and full height windows",
+      "width": 800,
+      "height": 600,
+      "note": "original 800x600 webp, supplied in ./images as 168120391788650f80c5a73bc-HLKT00000826_batch-3-800x600_24-main.jpg"
+    },
+    {
+      "id": "service.bedroom-wardrobe",
+      "src": "/images/services/bedroom-fitted-wardrobe-ceiling-fan-01.webp",
+      "alt": "Bedroom with a fitted floor to ceiling wardrobe, ceiling fan and tiled flooring",
+      "width": 800,
+      "height": 600,
+      "note": "original 800x600 webp, supplied in ./images as 1639470079750c1dfb6091161-HLKT00000755_resize-800x600_-main.jpg"
+    },
+    {
+      "id": "service.full-home-interiors",
+      "src": "/images/services/living-dining-tv-unit-display-01.webp",
+      "alt": "Living and dining area with a television unit, glazed display cabinet and marble flooring",
+      "width": 800,
+      "height": 600,
+      "note": "original 800x600 webp, supplied in ./images as 1.jpg"
+    }
+  ]
+}

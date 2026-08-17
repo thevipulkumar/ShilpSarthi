@@ -1,0 +1,39 @@
+{
+  "name": "shilp-sarthi",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "placeholders": "node scripts/generate-placeholders.mjs",
+    "photos": "node scripts/import-photos.mjs",
+    "illustrations": "node scripts/generate-illustrations.mjs",
+    "images:provenance": "node scripts/images-audit.mjs provenance",
+    "images:audit": "node scripts/images-audit.mjs audit",
+    "images:supplied": "node scripts/import-supplied.mjs",
+    "images:inspect": "node scripts/inspect-images.mjs ./images",
+    "images:gallery": "node scripts/import-gallery.mjs",
+    "icons": "node scripts/generate-icons.mjs",
+    "og": "node scripts/generate-og.mjs"
+  },
+  "dependencies": {
+    "next": "^16.3.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.6",
+    "@types/node": "22.15.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "autoprefixer": "10.4.21",
+    "eslint": "9.33.0",
+    "eslint-config-next": "^16.3.0",
+    "postcss": "^8.5.26",
+    "tailwindcss": "3.4.17",
+    "typescript": "5.9.2"
+  }
+}

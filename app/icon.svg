@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+  <!--
+    Same arch geometry as components/ui/Logo.tsx. If one changes, change both.
+
+    The header mark sits on no tile at all, which was the point of the redesign.
+    A favicon does need a ground, or it vanishes into a light tab strip, so this
+    one keeps a tile in the accent red rather than the old near-black, with the
+    arch reversed out in white. Legible at 16px on both light and dark chrome.
+
+    PNG fallbacks in /public and app/apple-icon.png are rendered from this file
+    by scripts/generate-icons.mjs.
+  -->
+  <rect width="40" height="40" rx="9" fill="#E71C24"/>
+  <path d="M8 33V19a12 12 0 0 1 24 0v14" fill="none" stroke="#FFFFFF" stroke-width="2.7" stroke-linecap="round"/>
+  <path d="M15 33V20.5a5 5 0 0 1 10 0V33Z" fill="#FFFFFF"/>
+</svg>

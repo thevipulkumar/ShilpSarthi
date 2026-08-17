@@ -1,0 +1,68 @@
+{
+  "retrievedAt": "2026-08-17",
+  "assets": [
+    {
+      "key": "bariatu-3bhk-full-home",
+      "from": "13.jpg",
+      "to": "images/projects/living-tv-unit-open-shelving-01",
+      "alt": "Living room with a television unit, open shelving and a low sideboard",
+      "width": 800,
+      "height": 600,
+      "format": "webp"
+    },
+    {
+      "key": "harmu-2bhk-kitchen-wardrobes",
+      "from": "dark-vanilla-modern-kitchen-black-countertops.webp",
+      "to": "images/projects/kitchen-wood-grey-black-counter-01",
+      "alt": "Modular kitchen in wood and grey with black counters and a breakfast counter",
+      "width": 800,
+      "height": 600,
+      "format": "jpeg"
+    },
+    {
+      "key": "kanke-villa-full-home",
+      "from": "168120506587892588794d8ae-HLKT00000827_batch-3-800x600_11-main.jpg",
+      "to": "images/projects/living-chesterfield-patterned-rug-01",
+      "alt": "Formal living room with a deep buttoned sofa, patterned rug and framed art",
+      "width": 800,
+      "height": 600,
+      "format": "webp"
+    },
+    {
+      "key": "doranda-3bhk-full-home",
+      "from": "16812826479900de199faa8ef-HLKT00000836_batch-2-800x600_23-main.jpg",
+      "to": "images/projects/bedroom-upholstered-headboard-01",
+      "alt": "Bedroom with an upholstered headboard, bedside lighting and full height curtains",
+      "width": 800,
+      "height": 600,
+      "format": "webp"
+    },
+    {
+      "key": "lalpur-2bhk-full-home",
+      "from": "1681205226697c70c0213a9dd-HLKT00000828_batch-3-800x600_33-main.jpg",
+      "to": "images/projects/living-panelled-wall-accent-seating-01",
+      "alt": "Compact living room with a panelled feature wall, accent sofa and chandelier",
+      "width": 800,
+      "height": 600,
+      "format": "webp"
+    },
+    {
+      "key": "studio.craft",
+      "from": "1680592144790b7c006ce218e-HLKT00000784_Resized-800x600_17-main.jpg",
+      "to": "images/studio/wardrobe-internals-drawers-hanging-01",
+      "alt": "Wardrobe internals with hanging space, drawer bank and shelving",
+      "width": 800,
+      "height": 600,
+      "format": "webp"
+    },
+    {
+      "key": "studio.finishes",
+      "from": "1681283290810be933de9aea9-HLKT00000837_batch-2-800x600_14-main.jpg",
+      "to": "images/studio/reading-corner-joinery-shelving-01",
+      "alt": "Reading corner with built-in shelving joinery and an armchair",
+      "width": 800,
+      "height": 600,
+      "format": "webp"
+    }
+  ]
+}
