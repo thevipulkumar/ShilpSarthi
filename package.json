@@ -4,20 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
-    "placeholders": "node scripts/generate-placeholders.mjs",
-    "photos": "node scripts/import-photos.mjs",
-    "illustrations": "node scripts/generate-illustrations.mjs",
-    "images:provenance": "node scripts/images-audit.mjs provenance",
-    "images:audit": "node scripts/images-audit.mjs audit",
-    "images:supplied": "node scripts/import-supplied.mjs",
-    "images:inspect": "node scripts/inspect-images.mjs ./images",
-    "images:gallery": "node scripts/import-gallery.mjs",
+    "build": "next build --webpack",
+    "build:turbo": "next build",
     "icons": "node scripts/generate-icons.mjs",
-    "og": "node scripts/generate-og.mjs"
+    "illustrations": "node scripts/generate-illustrations.mjs",
+    "images:audit": "node scripts/images-audit.mjs audit",
+    "images:gallery": "node scripts/import-gallery.mjs",
+    "images:inspect": "node scripts/inspect-images.mjs ./images",
+    "images:provenance": "node scripts/images-audit.mjs provenance",
+    "images:supplied": "node scripts/import-supplied.mjs",
+    "lint": "eslint .",
+    "og": "node scripts/generate-og.mjs",
+    "photos": "node scripts/import-photos.mjs",
+    "placeholders": "node scripts/generate-placeholders.mjs",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "next": "^16.3.0",
@@ -35,5 +36,8 @@
     "postcss": "^8.5.26",
     "tailwindcss": "3.4.17",
     "typescript": "5.9.2"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }
