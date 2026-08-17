@@ -394,6 +394,17 @@ Set these in the Node app's environment settings. The deploy screen showed **Non
 
 Also set `site.url` in `config/site.ts` to the final domain, because canonicals and structured data are built from it.
 
+**The three `NEXT_PUBLIC_` values are inlined at build time, not read at runtime.** Setting them and restarting is not enough; the app must be **rebuilt** afterwards or the site keeps the empty values it was built with, and every campaign records no conversions with nothing in the logs to explain it. `next build` now prints a warning when they are absent, so this shows up in the deploy log instead of being discovered later.
+
+`WEB3FORMS_ACCESS_KEY` is the opposite: it is read at request time, so it only needs to exist in the running process and a restart is enough. It is also verifiably absent from the build output, which is the point of proxying the form through `app/api/lead/route.ts`.
+
+Order of operations on the host:
+
+1. Set all four variables in the Node app's environment
+2. `npm run build`
+3. Restart the app
+4. Confirm with `curl -X POST -d '{}' https://<domain>/api/lead` — a `400` about a missing name means the key is live, a `500` about the form being unavailable means it is not
+
 ### The build must use webpack, not Turbopack
 
 `npm run build` runs `next build --webpack`. This is deliberate. **Do not revert it to a bare `next build`**, or the deploy will break.
