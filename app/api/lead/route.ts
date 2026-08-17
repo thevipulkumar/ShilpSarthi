@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { formattedAddress, site } from '@/config/site';
 import { validateLead, type LeadPayload } from '@/lib/validation';
+import { mailIsConfigured, sendLeadEmail, type MailField } from '@/lib/mail';
 
 /**
  * Lead submission proxy.
@@ -41,11 +42,31 @@ function isRateLimited(ip: string): boolean {
   return hits.length > MAX_PER_WINDOW;
 }
 
+/**
+ * The lead must survive a delivery failure. Before this existed a failed send
+ * meant the enquiry was gone: the visitor saw an error and the details were held
+ * nowhere. On a site running paid search that is the most expensive possible
+ * outcome, because the click was already paid for.
+ */
+function logLeadForRecovery(payload: Partial<LeadPayload>) {
+  console.error(
+    `LEAD NOT DELIVERED, recover manually: name=${payload.name} phone=+91 ${payload.phone} ` +
+      `property=${payload.propertyType || 'unspecified'} ` +
+      `service=${payload.service_interest || 'unspecified'} ` +
+      `page=${payload.source_page} at=${new Date().toISOString()}`,
+  );
+}
+
 export async function POST(request: Request) {
   const accessKey = process.env.WEB3FORMS_ACCESS_KEY;
 
-  if (!accessKey) {
-    console.error('WEB3FORMS_ACCESS_KEY is not set. Lead was not forwarded.');
+  /*
+   * Either delivery path is enough. SMTP is preferred and Web3Forms remains only
+   * for a Pro account with a whitelisted server IP; on the free plan a
+   * server-side call is refused outright.
+   */
+  if (!mailIsConfigured() && !accessKey) {
+    console.error('No delivery method configured: set the SMTP_* variables. Lead not sent.');
     return NextResponse.json(
       { error: `Our form is temporarily unavailable. Please call ${site.phones.primary.display}.` },
       { status: 500 },
@@ -120,6 +141,42 @@ export async function POST(request: Request) {
     'Studio address': formattedAddress,
   };
 
+  const fields: MailField[] = [
+    { label: 'Name', value: payload.name ?? '' },
+    { label: 'Phone', value: `+91 ${payload.phone}` },
+    { label: 'WhatsApp', value: `https://wa.me/91${payload.phone}` },
+    { label: 'Property type', value: payload.propertyType || 'Not specified' },
+    { label: 'Service interest', value: payload.service_interest || '' },
+    { label: 'Message', value: payload.message || '' },
+    { label: 'Form variant', value: payload.form_variant ?? '' },
+    { label: 'Source page', value: payload.source_page ?? '' },
+    { label: 'Landing page', value: payload.landing_page || '' },
+    { label: 'Referrer', value: payload.referrer || '' },
+    { label: 'UTM source', value: payload.utm_source || '' },
+    { label: 'UTM medium', value: payload.utm_medium || '' },
+    { label: 'UTM campaign', value: payload.utm_campaign || '' },
+    { label: 'UTM term', value: payload.utm_term || '' },
+    { label: 'UTM content', value: payload.utm_content || '' },
+    { label: 'gclid', value: payload.gclid || '' },
+    { label: 'fbclid', value: payload.fbclid || '' },
+  ];
+
+  if (mailIsConfigured()) {
+    try {
+      await sendLeadEmail(subject, fields);
+      return NextResponse.json({ success: true });
+    } catch (err) {
+      console.error('SMTP delivery failed', err);
+      logLeadForRecovery(payload);
+      return NextResponse.json(
+        {
+          error: `We could not send that. Please WhatsApp or call ${site.phones.primary.display}.`,
+        },
+        { status: 502 },
+      );
+    }
+  }
+
   try {
     const upstream = await fetch(WEB3FORMS_ENDPOINT, {
       method: 'POST',
@@ -156,12 +213,7 @@ export async function POST(request: Request) {
        * Writing the details to the server log means every lead can be recovered by
        * hand even while delivery is broken.
        */
-      console.error(
-        `LEAD NOT DELIVERED, recover manually: name=${payload.name} phone=+91 ${payload.phone} ` +
-          `property=${payload.propertyType || 'unspecified'} ` +
-          `service=${payload.service_interest || 'unspecified'} ` +
-          `page=${payload.source_page} at=${new Date().toISOString()}`,
-      );
+      logLeadForRecovery(payload);
 
       return NextResponse.json(
         {

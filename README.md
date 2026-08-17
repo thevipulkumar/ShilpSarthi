@@ -387,7 +387,12 @@ Set these in the Node app's environment settings. The deploy screen showed **Non
 
 | Variable | Notes |
 | --- | --- |
-| `WEB3FORMS_ACCESS_KEY` | Server-side only. Without it the enquiry form returns an error. |
+| `SMTP_HOST` | `smtp.hostinger.com` |
+| `SMTP_PORT` | `465` for implicit TLS, `587` for STARTTLS |
+| `SMTP_USER` | Full mailbox address on the domain. Also the From address. |
+| `SMTP_PASS` | That mailbox's password |
+| `LEAD_TO_EMAIL` | Where enquiries land |
+| `WEB3FORMS_ACCESS_KEY` | Optional fallback, Pro accounts only. See below. |
 | `NEXT_PUBLIC_GTM_ID` | `GTM-KXQJBHN9` |
 | `NEXT_PUBLIC_GA4_ID` | `G-05HY2XK0C0` |
 | `NEXT_PUBLIC_META_PIXEL_ID` | `950403934685094` |
@@ -419,6 +424,30 @@ Attempted to load @next/swc-linux-x64-gnu, but an error occurred:
 Next then falls back to its WebAssembly bindings and the build dies with "Turbopack is not supported on this platform because native bindings are not available". Webpack compiles fine against the WASM bindings, which is the fix.
 
 `npm run build:turbo` keeps the faster native path for local builds, where macOS has working native bindings. `next dev` is unchanged and still uses Turbopack, because development runs locally.
+
+### Why the form sends over SMTP, not Web3Forms
+
+Web3Forms cannot deliver from a server on its free plan. A server-side POST is
+refused with:
+
+```
+This method is not allowed. Use our API in client side or contact support
+with server IP address (Pro plan is required)
+```
+
+That is fundamentally incompatible with the design BRIEF.md asked for, which was
+to proxy the key through `app/api/lead/route.ts` so it could not be scraped from
+page source. The two requirements cannot both hold on the free tier.
+
+The form therefore sends over SMTP from a mailbox on the studio's own domain,
+which removes the third party altogether: nothing can rate limit it, challenge
+it, or change its terms. `WEB3FORMS_ACCESS_KEY` is kept as a fallback for a Pro
+account with a whitelisted server IP, and is ignored when the `SMTP_*` values are
+present.
+
+If delivery fails by either route, the enquiry is written to the server log
+prefixed `LEAD NOT DELIVERED`, so a lead is never silently destroyed. Search the
+app logs for that string after any outage.
 
 ### Do not add sharp as a direct dependency
 
