@@ -1,26 +1,43 @@
 /**
  * Lead delivery via Formspree.
  *
- * Formspree submissions go to a per-form endpoint built from that form's
- * hashid, which is shown on the form's own page in the dashboard:
+ * Formspree has two kinds of form, and they use different endpoints. The
+ * library's own source is the authority on this:
  *
- *   https://formspree.io/f/<hashid>
+ *   this.project ? `${base}/p/${project}/f/${formKey}` : `${base}/f/${hashid}`
  *
- * A project id and deploy key are NOT this. Those belong to the Formspree CLI,
- * which deploys a formspree.json config to a project, and are no use for
- * submitting a lead.
+ * A form created in the dashboard gets a hashid. A form defined in
+ * formspree.json and pushed with the CLI belongs to a PROJECT, and is addressed
+ * by project id plus the form key from that file. Project forms have no hashid
+ * at all, which is why looking for one leads nowhere.
  *
- * `Accept: application/json` matters. Without it Formspree answers a submission
- * with a redirect to its own thank-you page rather than a JSON body, which from
- * a server is useless and hard to interpret.
+ * Verified against the live API before this was written: posting to a project
+ * endpoint from a server returns a normal JSON response, and an unknown form key
+ * gives FORM_NOT_FOUND while an unknown project gives PROJECT_NOT_FOUND. Server
+ * side submission is therefore supported, unlike Web3Forms, whose free plan
+ * refuses it outright.
+ *
+ * `Accept: application/json` matters. Without it Formspree answers with a
+ * redirect to its own thank-you page rather than a JSON body, which from a
+ * server is useless and hard to interpret.
  */
 
-const endpointFromEnv = (): string | undefined => {
-  const raw = process.env.FORMSPREE_FORM_ID?.trim();
-  if (!raw) return undefined;
-  // Accept either a bare hashid or a full URL, so a pasted endpoint also works.
-  return raw.startsWith('http') ? raw : `https://formspree.io/f/${raw}`;
-};
+const BASE = 'https://formspree.io';
+
+/**
+ * Resolves whichever of the two styles is configured. A full URL wins, then a
+ * project plus form key, then a bare hashid.
+ */
+function endpointFromEnv(): string | undefined {
+  const project = process.env.FORMSPREE_PROJECT_ID?.trim();
+  const formKey = process.env.FORMSPREE_FORM_KEY?.trim();
+  const legacy = process.env.FORMSPREE_FORM_ID?.trim();
+
+  if (legacy?.startsWith('http')) return legacy;
+  if (project && formKey) return `${BASE}/p/${project}/f/${formKey}`;
+  if (legacy) return `${BASE}/f/${legacy}`;
+  return undefined;
+}
 
 export function formspreeIsConfigured(): boolean {
   return Boolean(endpointFromEnv());

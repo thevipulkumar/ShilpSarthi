@@ -437,7 +437,22 @@ Three routes are tried in order, and the first that succeeds ends it:
 
 If all of them fail the enquiry is written to the log prefixed `LEAD NOT DELIVERED`, so a lead is never silently destroyed. Search the app logs for that string after any outage.
 
-`FORMSPREE_FORM_ID` is the **form's hashid**, shown on that form's own page in the dashboard, e.g. `xrgkabcd`. A full `https://formspree.io/f/<hashid>` URL is also accepted. A Formspree **project id and deploy key are not this**: they belong to the Formspree CLI, which deploys a `formspree.json` config to a project, and cannot submit a lead.
+Formspree has two kinds of form and they use different endpoints. This project uses the **CLI style**: the form is declared in `formspree.json` and pushed to the project.
+
+```bash
+npm install --global @formspree/cli
+FORMSPREE_DEPLOY_KEY=<key from the project's Settings tab> npm run formspree:deploy
+```
+
+A form created that way belongs to a project and has **no hashid**, which is why there is none to find in the dashboard. It is addressed by project id plus the form key:
+
+```
+https://formspree.io/p/<project id>/f/<form key>
+```
+
+Set `FORMSPREE_PROJECT_ID` and `FORMSPREE_FORM_KEY` for that style. `FORMSPREE_FORM_ID` is only for a form created directly in the dashboard, which does get a hashid; a full URL is accepted there too.
+
+The **deploy key is not a submission credential**. It only authorises the CLI to overwrite the project's form configuration, so it is never read by the site and must not be committed.
 
 ### Why the form sends over SMTP, not Web3Forms
 

@@ -1,0 +1,13 @@
+{
+  "forms": {
+    "websiteLead": {
+      "name": "Website lead",
+      "actions": [
+        {
+          "type": "email",
+          "to": "homelanesinghmoreranchi@gmail.com"
+        }
+      ]
+    }
+  }
+}
