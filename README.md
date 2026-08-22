@@ -425,6 +425,20 @@ Next then falls back to its WebAssembly bindings and the build dies with "Turbop
 
 `npm run build:turbo` keeps the faster native path for local builds, where macOS has working native bindings. `next dev` is unchanged and still uses Turbopack, because development runs locally.
 
+### How a lead is delivered
+
+Three routes are tried in order, and the first that succeeds ends it:
+
+| Order | Route | Configured by | Notes |
+| --- | --- | --- | --- |
+| 1 | Formspree | `FORMSPREE_FORM_ID` | Dashboard, spam filtering, submission history. Free plan caps monthly submissions. |
+| 2 | SMTP | `SMTP_*` | No cap, no third party. Catches Formspree's cap and any outage. |
+| 3 | Web3Forms | `WEB3FORMS_ACCESS_KEY` | Pro accounts only. See below. |
+
+If all of them fail the enquiry is written to the log prefixed `LEAD NOT DELIVERED`, so a lead is never silently destroyed. Search the app logs for that string after any outage.
+
+`FORMSPREE_FORM_ID` is the **form's hashid**, shown on that form's own page in the dashboard, e.g. `xrgkabcd`. A full `https://formspree.io/f/<hashid>` URL is also accepted. A Formspree **project id and deploy key are not this**: they belong to the Formspree CLI, which deploys a `formspree.json` config to a project, and cannot submit a lead.
+
 ### Why the form sends over SMTP, not Web3Forms
 
 Web3Forms cannot deliver from a server on its free plan. A server-side POST is

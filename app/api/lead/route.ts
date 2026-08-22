@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { formattedAddress, site } from '@/config/site';
 import { validateLead, type LeadPayload } from '@/lib/validation';
 import { mailIsConfigured, sendLeadEmail, type MailField } from '@/lib/mail';
+import { formspreeIsConfigured, submitToFormspree } from '@/lib/formspree';
 
 /**
  * Lead submission proxy.
@@ -61,12 +62,18 @@ export async function POST(request: Request) {
   const accessKey = process.env.WEB3FORMS_ACCESS_KEY;
 
   /*
-   * Either delivery path is enough. SMTP is preferred and Web3Forms remains only
-   * for a Pro account with a whitelisted server IP; on the free plan a
-   * server-side call is refused outright.
+   * Delivery is tried in order: Formspree, then SMTP, then Web3Forms. Any one of
+   * them being configured is enough to accept a submission.
+   *
+   * Formspree leads because it gives a dashboard, spam filtering and a record of
+   * every submission. Its free plan caps monthly submissions, so SMTP sits behind
+   * it: if that cap is reached mid-month, which would otherwise start rejecting
+   * leads precisely while advertising is running, the lead still gets delivered.
+   * Web3Forms is last and only works on a Pro account with a whitelisted server
+   * IP, since its free plan refuses server-side calls outright.
    */
-  if (!mailIsConfigured() && !accessKey) {
-    console.error('No delivery method configured: set the SMTP_* variables. Lead not sent.');
+  if (!formspreeIsConfigured() && !mailIsConfigured() && !accessKey) {
+    console.error('No delivery method configured. Set FORMSPREE_FORM_ID or the SMTP_* variables.');
     return NextResponse.json(
       { error: `Our form is temporarily unavailable. Please call ${site.phones.primary.display}.` },
       { status: 500 },
@@ -160,6 +167,26 @@ export async function POST(request: Request) {
     { label: 'gclid', value: payload.gclid || '' },
     { label: 'fbclid', value: payload.fbclid || '' },
   ];
+
+  if (formspreeIsConfigured()) {
+    try {
+      const result = await submitToFormspree(
+        subject,
+        Object.fromEntries(fields.filter((f) => f.value.trim() !== '').map((f) => [f.label, f.value])),
+      );
+      if (result.ok) return NextResponse.json({ success: true });
+
+      console.error(
+        result.quotaExceeded
+          ? `Formspree monthly submission limit reached (HTTP ${result.status}). ` +
+              'Falling back to SMTP. Upgrade the plan or raise the cap.'
+          : `Formspree rejected the submission (HTTP ${result.status}): ${result.detail}`,
+      );
+    } catch (err) {
+      console.error('Formspree request failed, falling back', err);
+    }
+    // Deliberately falls through to SMTP rather than returning.
+  }
 
   if (mailIsConfigured()) {
     try {
