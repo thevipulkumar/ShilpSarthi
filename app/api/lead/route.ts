@@ -117,9 +117,18 @@ export async function POST(request: Request) {
     );
   }
 
-  const subject = payload.estimate_range
-    ? `Estimate lead: ${payload.name} | ${payload.propertyType || 'property not specified'}`
-    : `Website lead: ${payload.name} | ${payload.form_variant}`;
+  /*
+   * Written to read like a person wrote it, because these were landing in spam.
+   * The old subject ended in the form variant ("| hero", "| inline"), which is
+   * internal jargon that means nothing to whoever opens the email and reads as
+   * machine output to a spam filter. The property type is genuinely useful at a
+   * glance instead.
+   *
+   * Subject alone will not decide the spam verdict, but everything that makes an
+   * automated message look automated adds to the score.
+   */
+  const property = payload.propertyType?.trim();
+  const subject = `New enquiry from ${payload.name}${property ? ` (${property})` : ''}`;
 
   const body = {
     access_key: accessKey,
